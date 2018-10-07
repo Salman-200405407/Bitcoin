@@ -1,4 +1,4 @@
-package qu.edu.qa;
+package qa.edu.qu;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -7,7 +7,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
@@ -20,6 +19,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+
+import org.apache.commons.lang3.StringUtils;
 
 import qa.edu.qu.bean.Input;
 import qa.edu.qu.bean.MyKeyPair;
@@ -35,11 +36,11 @@ public class GUI extends JFrame {
 	private Transaction transaction;
 	private JTextField textFieldPrevTxHash;
 	private JTextField textFieldIndex;
-	private JTextField textFieldSignature;
+	private JTextArea textFieldSignature;
 	private JTextField textFieldValue;
 	private JTextArea textAreaPublicKey;
 	private JTextArea textAreaPrivateKey;
-	protected byte[] signature;
+	protected String signature;
 	private JTextArea textAreaOutPubKey;
 
 	/**
@@ -121,8 +122,9 @@ public class GUI extends JFrame {
 		textFieldIndex.setColumns(10);
 
 
-		textFieldSignature = new JTextField();
-		textFieldSignature.setBounds(25, 420, 115, 20);
+		textFieldSignature = new JTextArea();
+		textFieldSignature.setBounds(25, 420, 330, 100);
+		textFieldSignature.setLineWrap(true);
 		contentPane.add(textFieldSignature);
 		textFieldSignature.setColumns(10);
 
@@ -194,12 +196,11 @@ public class GUI extends JFrame {
 				try {
 					// decrypt the signature to get the hash of the object and then compare it with
 					// the hash of the object that we currently have
-					byte[] decryptedObject = CryptographyUtils.getInstance().decryptObject(signature,
-							keyPair.getPublicKey());
+					String decryptedSignature = CryptographyUtils.getInstance().decryptTransactionSignature(signature, keyPair.getPublicKey());
 
-					byte[] hash = CryptographyUtils.getInstance().getHash(transaction);
+					String hash = CryptographyUtils.getInstance().getHash(transaction);
 
-					if (Arrays.equals(decryptedObject, hash)) {
+					if (StringUtils.equals(decryptedSignature, hash)) {
 						JOptionPane.showMessageDialog(null, "Valid Signature");
 					} else {
 						JOptionPane.showMessageDialog(null, "Invalid Signature");
@@ -221,7 +222,7 @@ public class GUI extends JFrame {
 				textAreaOutPubKey.setText(textAreaPublicKey.getText());
 				try {
 					//get the signature by encrypting the transaction object using the private key
-					signature = CryptographyUtils.getInstance().encryptObject(transaction, keyPair.getPrivateKey());
+					signature = CryptographyUtils.getInstance().encryptTransaction(transaction, keyPair.getPrivateKey());
 					textFieldSignature.setText(new String(signature));
 				} catch (Exception e) {
 					e.printStackTrace();

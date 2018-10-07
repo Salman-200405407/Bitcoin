@@ -2,7 +2,7 @@ package qa.edu.qu.bean;
 
 import java.io.Serializable;
 
-public class Input  implements Serializable{
+public class Input implements TransactionObject, Serializable {
 	/**
 	 * 
 	 */
@@ -101,6 +101,12 @@ public class Input  implements Serializable{
 		} else if (!signature.equals(other.signature))
 			return false;
 		return true;
+	}
+
+	public String getValueString() {
+		return getPrevTxHash() != null ? getPrevTxHash():""+
+				getValueString() != null ? getValueString():""+
+						getOutputIndex() != null?getOutputIndex().toString():"";
 	}
 
 }

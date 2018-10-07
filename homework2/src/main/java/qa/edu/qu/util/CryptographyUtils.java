@@ -1,9 +1,6 @@
 package qa.edu.qu.util;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.security.GeneralSecurityException;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
@@ -11,7 +8,13 @@ import java.security.PublicKey;
 
 import javax.crypto.Cipher;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.collections4.CollectionUtils;
+
+import qa.edu.qu.bean.Input;
 import qa.edu.qu.bean.MyKeyPair;
+import qa.edu.qu.bean.Output;
+import qa.edu.qu.bean.Transaction;
 
 public class CryptographyUtils {
 
@@ -44,33 +47,16 @@ public class CryptographyUtils {
 	}
 
 
-	/**
-	 * 
-	 * @param object
-	 * @param privateKey
-	 * @return 
-	 * This method will return byte array of encrypted give object data
-	 * 
-	 * @throws IOException
-	 * @throws GeneralSecurityException
-	 */
-	public byte[] encryptObject(Object object, PrivateKey privateKey) throws IOException, GeneralSecurityException {
-		byte[] input = getHash(object);
+	public String encryptTransaction(Transaction transaction, PrivateKey privateKey) throws IOException, GeneralSecurityException {
+		String input = getHash(transaction);
 		this.cipher.init(Cipher.ENCRYPT_MODE, privateKey);
-		return this.cipher.doFinal(input);
+		return Base64.encodeBase64String(cipher.doFinal(input.getBytes("UTF-8")));
 	}
 	
-	/**
-	 * @param input
-	 * @param publicKey
-	 * @return
-	 * This method will return the decrypted data of the given encrypted data.
-	 * @throws IOException
-	 * @throws GeneralSecurityException
-	 */
-	public byte[] decryptObject(byte[] input, PublicKey publicKey) throws IOException, GeneralSecurityException {
+
+	public String decryptTransactionSignature(String msg, PublicKey publicKey) throws IOException, GeneralSecurityException {
 		this.cipher.init(Cipher.DECRYPT_MODE, publicKey);
-		return this.cipher.doFinal(input);
+		return new String(cipher.doFinal(Base64.decodeBase64(msg)), "UTF-8");
 	}
 
 	/**
@@ -79,37 +65,58 @@ public class CryptographyUtils {
 	 * This method will return SHA256 hash data for the given object
 	 * @throws IOException
 	 */
-	public byte[] getHash(Object object) throws IOException {
-		return org.apache.commons.codec.digest.DigestUtils.sha256(serializeObject(object));
+	public String getHash(Transaction transaction) throws IOException {
+		return org.apache.commons.codec.digest.DigestUtils.sha256Hex(getTransactionValueString(transaction));
 	}
 
-	/**
-	 * @param object
-	 * @return
-	 * This method will serialise the given object and return the byte array
-	 * @throws IOException
-	 */
-	private byte[] serializeObject(Object object) throws IOException {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		ObjectOutput out = null;
-		byte[] yourBytes = null;
-		try {
-			out = new ObjectOutputStream(bos);
-			out.writeObject(object);
-			out.flush();
-			yourBytes = bos.toByteArray();
-		} finally {
-			try {
-				bos.close();
-			} catch (IOException ex) {
-				throw ex;
+	private String getTransactionValueString(Transaction transaction) {
+		StringBuffer transactionValueString = new StringBuffer();
+		if(transaction != null) {
+			if(CollectionUtils.isNotEmpty(transaction.getInputs())) {
+				for(Input currentInput:transaction.getInputs()) {
+					transactionValueString.append(currentInput.getValueString());
+				}
 			}
+			
+			if(CollectionUtils.isNotEmpty(transaction.getOutputs())) {
+				for(Output currentOutput:transaction.getOutputs()) {
+					transactionValueString.append(currentOutput.getValueString());
+				}
+			}
+			
 		}
-		return yourBytes;
+		return transactionValueString.toString();
 	}
 
 	
-// NOT USED 	
+	// NOT USED
+	
+//	/**
+//	 * @param object
+//	 * @return
+//	 * This method will serialise the given object and return the byte array
+//	 * @throws IOException
+//	 */
+//	private byte[] serializeObject(Object object) throws IOException {
+//		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//		ObjectOutput out = null;
+//		byte[] yourBytes = null;
+//		try {
+//			out = new ObjectOutputStream(bos);
+//			out.writeObject(object);
+//			out.flush();
+//			yourBytes = bos.toByteArray();
+//		} finally {
+//			try {
+//				bos.close();
+//			} catch (IOException ex) {
+//				throw ex;
+//			}
+//		}
+//		return yourBytes;
+//	}
+
+ 	
 //	public String encryptText(String msg, PrivateKey privateKey) throws Exception {
 //	this.cipher.init(Cipher.ENCRYPT_MODE, privateKey);
 //	return Base64.encodeBase64String(cipher.doFinal(msg.getBytes("UTF-8")));

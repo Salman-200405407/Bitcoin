@@ -3,7 +3,7 @@ package qa.edu.qu.bean;
 import java.io.Serializable;
 import java.security.PublicKey;
 
-public class Output implements Serializable {
+public class Output implements TransactionObject, Serializable {
 
 	/**
 	 * 
@@ -67,6 +67,10 @@ public class Output implements Serializable {
 		} else if (!value.equals(other.value))
 			return false;
 		return true;
+	}
+
+	public String getValueString() {
+		return getValue() != null ? getValue().toString():"";
 	}
 
 }
