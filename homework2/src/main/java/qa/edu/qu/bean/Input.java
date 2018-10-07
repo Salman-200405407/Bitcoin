@@ -104,9 +104,8 @@ public class Input implements TransactionObject, Serializable {
 	}
 
 	public String getValueString() {
-		return getPrevTxHash() != null ? getPrevTxHash():""+
-				getValueString() != null ? getValueString():""+
-						getOutputIndex() != null?getOutputIndex().toString():"";
+		return (getPrevTxHash() != null ? getPrevTxHash():"")+
+						(getOutputIndex() != null?getOutputIndex().toString():"");
 	}
 
 }

@@ -208,6 +208,8 @@ public class GUI extends JFrame {
 
 				} catch (Exception e) {
 					e.printStackTrace();
+					
+				    showErrorMsg("Error, Please verify that you have signed the input.");
 				}
 			}
 		});
@@ -226,8 +228,13 @@ public class GUI extends JFrame {
 					textFieldSignature.setText(new String(signature));
 				} catch (Exception e) {
 					e.printStackTrace();
+					String message = "Error while signing, Please verify you have generated"
+							+ " the public and private keys";
+				    showErrorMsg(message);
 				}
 			}
+
+
 		});
 		btnSignInput.setBounds(25, 531, 112, 23);
 		contentPane.add(btnSignInput);
@@ -260,7 +267,10 @@ public class GUI extends JFrame {
 		outputs.add(output);
 		transaction.setOutputs(outputs);
 
-		textFieldIndex.setText("0");
-		textFieldValue.setText("0");
 	}
+	
+	private void showErrorMsg(String message) {
+	    JOptionPane.showMessageDialog(new JFrame(), message, "Error",
+	        JOptionPane.ERROR_MESSAGE);
+}
 }
